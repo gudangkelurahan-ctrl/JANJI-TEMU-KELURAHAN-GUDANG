@@ -992,13 +992,123 @@ th {
 
 
 /* ==================================================
-   STORAGE
+   FIREBASE REALTIME DATABASE
 ================================================== */
 
-let dataJanji =
-    JSON.parse(
-        localStorage.getItem("dataJanji")
-    ) || [];
+const FIREBASE_URL =
+    "https://janji-temu-kel-gudang-default-rtdb.asia-southeast1.firebasedatabase.app";
+
+const FIREBASE_PATH = "/janjiTemu";
+
+let dataJanji = [];
+
+
+/* ==================================================
+   FIREBASE - SIMPAN DATA
+================================================== */
+
+async function simpanKeFirebase(data) {
+
+    const response = await fetch(
+        FIREBASE_URL + FIREBASE_PATH + ".json",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error("Gagal menyimpan data ke Firebase.");
+    }
+
+    return await response.json();
+}
+
+
+/* ==================================================
+   FIREBASE - AMBIL DATA
+================================================== */
+
+async function ambilDariFirebase() {
+
+    const response = await fetch(
+        FIREBASE_URL + FIREBASE_PATH + ".json"
+    );
+
+    if (!response.ok) {
+        throw new Error("Gagal mengambil data dari Firebase.");
+    }
+
+    const data = await response.json();
+
+    if (!data) {
+        return [];
+    }
+
+    return Object.entries(data).map(function([firebaseId, item]) {
+        return {
+            ...item,
+            firebaseId: firebaseId
+        };
+    });
+}
+
+
+/* ==================================================
+   FIREBASE - UPDATE STATUS
+================================================== */
+
+async function updateStatusFirebase(firebaseId, status) {
+
+    const response = await fetch(
+        FIREBASE_URL +
+        FIREBASE_PATH +
+        "/" +
+        firebaseId +
+        ".json",
+        {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                status: status
+            })
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error("Gagal memperbarui status di Firebase.");
+    }
+}
+
+
+/* ==================================================
+   LOAD DATA FIREBASE
+================================================== */
+
+async function loadDataFirebase() {
+
+    try {
+
+        dataJanji = await ambilDariFirebase();
+
+        tampilkanAdmin();
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Firebase tidak dapat diakses.\\n\\n" +
+            "Periksa Firebase Realtime Database Rules " +
+            "dan koneksi internet."
+        );
+    }
+}
 
 
 /* ==================================================
@@ -1028,10 +1138,12 @@ document.getElementById("tanggal")
 
 document
 .getElementById("formJanjiTemu")
-.addEventListener("submit", function(e) {
+.addEventListener("submit", async function(e) {
 
     e.preventDefault();
 
+    const botao =
+        this.querySelector(".btn-submit");
 
     const nama =
         document.getElementById("nama").value.trim();
@@ -1070,25 +1182,25 @@ document
         );
 
         return;
-
     }
 
 
     /* NOMOR BOOKING */
+
+    const sekarang = new Date();
+
+    const tanggalBooking =
+        sekarang.getFullYear() +
+        String(sekarang.getMonth() + 1)
+            .padStart(2, "0") +
+        String(sekarang.getDate())
+            .padStart(2, "0");
 
     const nomor =
         Math.floor(
             1000 +
             Math.random() * 9000
         );
-
-    const tanggalBooking =
-        today.getFullYear() +
-        String(today.getMonth() + 1)
-            .padStart(2,"0") +
-        String(today.getDate())
-            .padStart(2,"0");
-
 
     const booking =
         "JT-" +
@@ -1100,8 +1212,6 @@ document
     /* DATA BARU */
 
     const dataBaru = {
-
-        id: Date.now(),
 
         booking: booking,
 
@@ -1123,57 +1233,77 @@ document
 
         keperluan: keperluan,
 
-        status: "Menunggu"
+        status: "Menunggu",
 
+        waktuDaftar:
+            new Date().toISOString()
     };
 
 
-    /* SIMPAN */
+    /* KIRIM KE FIREBASE */
 
-    dataJanji.push(dataBaru);
+    botao.disabled = true;
+    botao.textContent = "MENGIRIM...";
 
-    localStorage.setItem(
-        "dataJanji",
-        JSON.stringify(dataJanji)
-    );
+    try {
 
+        const hasil =
+            await simpanKeFirebase(dataBaru);
 
-    /* TAMPILKAN BOOKING */
+        dataBaru.firebaseId = hasil.name;
 
-    document.getElementById("nomorBooking")
-        .textContent = booking;
-
-    document.getElementById("hasil")
-        .style.display = "block";
+        dataJanji.push(dataBaru);
 
 
-    /* RESET */
+        /* TAMPILKAN BOOKING */
 
-    document.getElementById("formJanjiTemu")
-        .reset();
+        document.getElementById("nomorBooking")
+            .textContent = booking;
 
-
-    document.getElementById("tanggal")
-        .min = todayString;
-
-
-    /* NOTIFIKASI */
-
-    tampilkanNotifikasi();
+        document.getElementById("hasil")
+            .style.display = "block";
 
 
-    /* UPDATE ADMIN */
+        /* RESET */
 
-    tampilkanAdmin();
+        document.getElementById("formJanjiTemu")
+            .reset();
+
+        document.getElementById("tanggal")
+            .min = todayString;
 
 
-    window.scrollTo({
-        top: document.body.scrollHeight,
-        behavior: "smooth"
-    });
+        /* UPDATE TABEL */
+
+        tampilkanAdmin();
+
+
+        window.scrollTo({
+            top: document.body.scrollHeight,
+            behavior: "smooth"
+        });
+
+
+        alert(
+            "Pengajuan berhasil disimpan ke sistem."
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Pengajuan gagal disimpan.\\n\\n" +
+            "Periksa koneksi Firebase dan coba lagi."
+        );
+
+    } finally {
+
+        botao.disabled = false;
+        botao.textContent = "AJUKAN JANJI TEMU";
+    }
 
 });
-
 
 
 /* ==================================================
@@ -1383,78 +1513,68 @@ function updateStatistik() {
    SETUJUI
 ================================================== */
 
-function setujui(booking) {
+async function ubahStatus(booking, statusBaru) {
 
     const item =
         dataJanji.find(
             x => x.booking === booking
         );
 
-    if (!item) return;
+    if (!item || !item.firebaseId) {
+        alert("Data Firebase tidak ditemukan.");
+        return;
+    }
 
-    item.status = "Disetujui";
+    try {
 
-    localStorage.setItem(
-        "dataJanji",
-        JSON.stringify(dataJanji)
-    );
-
-    tampilkanAdmin();
-
-}
-
-
-
-/* ==================================================
-   TOLAK
-================================================== */
-
-function tolak(booking) {
-
-    const item =
-        dataJanji.find(
-            x => x.booking === booking
+        await updateStatusFirebase(
+            item.firebaseId,
+            statusBaru
         );
 
-    if (!item) return;
+        item.status = statusBaru;
 
-    item.status = "Ditolak";
+        tampilkanAdmin();
 
-    localStorage.setItem(
-        "dataJanji",
-        JSON.stringify(dataJanji)
-    );
+    } catch (error) {
 
-    tampilkanAdmin();
+        console.error(error);
 
-}
-
-
-
-/* ==================================================
-   SELESAI
-================================================== */
-
-function selesai(booking) {
-
-    const item =
-        dataJanji.find(
-            x => x.booking === booking
+        alert(
+            "Status gagal diperbarui di Firebase."
         );
+    }
+}
 
-    if (!item) return;
 
-    item.status = "Selesai";
+async function setujui(booking) {
 
-    localStorage.setItem(
-        "dataJanji",
-        JSON.stringify(dataJanji)
+    await ubahStatus(
+        booking,
+        "Disetujui"
     );
-
-    tampilkanAdmin();
 
 }
 
+
+async function tolak(booking) {
+
+    await ubahStatus(
+        booking,
+        "Ditolak"
+    );
+
+}
+
+
+async function selesai(booking) {
+
+    await ubahStatus(
+        booking,
+        "Selesai"
+    );
+
+}
 
 
 /* ==================================================
@@ -1635,10 +1755,22 @@ document.addEventListener(
 
 
 /* ==================================================
-   TAMPILKAN DATA AWAL
+   TAMPILKAN DATA AWAL DARI FIREBASE
 ================================================== */
 
-tampilkanAdmin();
+loadDataFirebase();
+
+/* Refresh data Admin setiap 5 detik */
+setInterval(function() {
+
+    if (
+        document.getElementById("halamanAdmin")
+            .style.display === "block"
+    ) {
+        loadDataFirebase();
+    }
+
+}, 5000);
 
 </script>
 
