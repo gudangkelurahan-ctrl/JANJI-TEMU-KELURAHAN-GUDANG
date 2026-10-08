@@ -429,6 +429,49 @@ th {
     }
 }
 
+
+/* ==============================
+   LOGIN ADMIN
+============================== */
+#loginAdminOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: rgba(15, 23, 42, .78);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.login-admin-card {
+    width: min(420px, 100%);
+    background: #fff;
+    border-radius: 18px;
+    padding: 30px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25);
+}
+.login-admin-card h2 { margin: 0 0 8px; }
+.login-admin-card p { color: #64748b; margin-top: 0; }
+.login-admin-card label { display:block; margin:16px 0 7px; font-weight:600; }
+.login-admin-card input {
+    width:100%;
+    padding:12px 14px;
+    border:1px solid #cbd5e1;
+    border-radius:10px;
+    font-size:15px;
+}
+.login-admin-actions { display:flex; gap:10px; margin-top:20px; }
+.login-admin-actions button {
+    flex:1;
+    padding:12px;
+    border:0;
+    border-radius:10px;
+    font-weight:700;
+}
+.btn-login-admin { background:#2563eb; color:#fff; }
+.btn-cancel-admin { background:#e2e8f0; color:#334155; }
+#loginAdminError { color:#dc2626; min-height:20px; margin-top:12px; font-size:14px; }
+
 </style>
 </head>
 
@@ -748,6 +791,34 @@ th {
 
 
 
+
+<!-- ==================================================
+     LOGIN ADMIN
+================================================== -->
+<div id="loginAdminOverlay">
+    <div class="login-admin-card">
+        <h2>🔐 Login Admin</h2>
+        <p>Masuk untuk membuka Dashboard Admin.</p>
+
+        <form id="formLoginAdmin">
+            <label for="adminEmail">Email Admin</label>
+            <input type="email" id="adminEmail" autocomplete="username"
+                   placeholder="admin@kelurahangu dang.go.id" required>
+
+            <label for="adminPassword">Password</label>
+            <input type="password" id="adminPassword" autocomplete="current-password"
+                   placeholder="Masukkan password" required>
+
+            <div id="loginAdminError"></div>
+
+            <div class="login-admin-actions">
+                <button type="button" class="btn-cancel-admin" onclick="tutupLoginAdmin()">Batal</button>
+                <button type="submit" class="btn-login-admin">MASUK</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- ==================================================
      HALAMAN ADMIN
 ================================================== -->
@@ -787,6 +858,10 @@ th {
 
             <button onclick="kembaliPemohon()">
                 ← Halaman Pemohon
+            </button>
+
+            <button onclick="logoutAdmin()">
+                🚪 Keluar Admin
             </button>
 
         </div>
@@ -1000,6 +1075,15 @@ const FIREBASE_URL =
 
 const FIREBASE_PATH = "/janjiTemu";
 
+/* ==================================================
+   FIREBASE AUTHENTICATION
+================================================== */
+const FIREBASE_API_KEY =
+    "AIzaSyDvi-Q7il9fxeBDSuqvR6tO3GWGiFj9pbQ";
+
+const FIREBASE_AUTH_URL =
+    "https://identitytoolkit.googleapis.com/v1/accounts";
+
 let dataJanji = [];
 
 
@@ -1034,8 +1118,13 @@ async function simpanKeFirebase(data) {
 
 async function ambilDariFirebase() {
 
+    const adminToken = sessionStorage.getItem("adminIdToken");
+    const authQuery = adminToken
+        ? "?auth=" + encodeURIComponent(adminToken)
+        : "";
+
     const response = await fetch(
-        FIREBASE_URL + FIREBASE_PATH + ".json"
+        FIREBASE_URL + FIREBASE_PATH + ".json" + authQuery
     );
 
     if (!response.ok) {
@@ -1695,22 +1784,90 @@ function filterData() {
 ================================================== */
 
 function bukaAdmin() {
-
-    document.getElementById(
-        "halamanPemohon"
-    ).style.display = "none";
-
-
-    document.getElementById(
-        "halamanAdmin"
-    ).style.display = "block";
-
-
-    tampilkanAdmin();
-
+    document.getElementById("loginAdminOverlay").style.display = "flex";
+    document.getElementById("adminEmail").focus();
 }
 
+function tutupLoginAdmin() {
+    document.getElementById("loginAdminOverlay").style.display = "none";
+    document.getElementById("loginAdminError").textContent = "";
+    document.getElementById("formLoginAdmin").reset();
+}
 
+async function loginAdminFirebase(email, password) {
+    if (FIREBASE_API_KEY === "ISI_API_KEY_FIREBASE_DI_SINI") {
+        throw new Error("API_KEY_BELUM_DIISI");
+    }
+
+    const response = await fetch(
+        FIREBASE_AUTH_URL + ":signInWithPassword?key=" + encodeURIComponent(FIREBASE_API_KEY),
+        {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                email: email,
+                password: password,
+                returnSecureToken: true
+            })
+        }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        const code = result?.error?.message || "LOGIN_GAGAL";
+        throw new Error(code);
+    }
+
+    sessionStorage.setItem("adminIdToken", result.idToken);
+    sessionStorage.setItem("adminEmail", email);
+    return result;
+}
+
+document.getElementById("formLoginAdmin").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById("adminEmail").value.trim();
+    const password = document.getElementById("adminPassword").value;
+    const errorBox = document.getElementById("loginAdminError");
+    const button = this.querySelector(".btn-login-admin");
+
+    errorBox.textContent = "";
+    button.disabled = true;
+    button.textContent = "MEMERIKSA...";
+
+    try {
+        await loginAdminFirebase(email, password);
+
+        tutupLoginAdmin();
+
+        document.getElementById("halamanPemohon").style.display = "none";
+        document.getElementById("halamanAdmin").style.display = "block";
+
+        await loadDataFirebase();
+
+    } catch (error) {
+        console.error(error);
+
+        let pesan = "Email atau password Admin salah.";
+
+        if (error.message === "API_KEY_BELUM_DIISI") {
+            pesan = "API Key Firebase belum diisi pada file index.html.";
+        } else if (error.message === "EMAIL_NOT_FOUND") {
+            pesan = "Email Admin belum terdaftar di Firebase Authentication.";
+        } else if (error.message === "INVALID_PASSWORD" || error.message === "INVALID_LOGIN_CREDENTIALS") {
+            pesan = "Password Admin salah.";
+        } else if (error.message === "USER_DISABLED") {
+            pesan = "Akun Admin dinonaktifkan.";
+        }
+
+        errorBox.textContent = pesan;
+
+    } finally {
+        button.disabled = false;
+        button.textContent = "MASUK";
+    }
+});
 
 /* ==================================================
    KEMBALI PEMOHON
@@ -1730,6 +1887,20 @@ function kembaliPemohon() {
 }
 
 
+
+
+function logoutAdmin() {
+    sessionStorage.removeItem("adminIdToken");
+    sessionStorage.removeItem("adminEmail");
+
+    document.getElementById("halamanAdmin").style.display = "none";
+    document.getElementById("halamanPemohon").style.display = "block";
+
+    dataJanji = [];
+    tampilkanAdmin();
+
+    alert("Anda sudah keluar dari Dashboard Admin.");
+}
 
 /* ==================================================
    AKSES ADMIN
@@ -1758,7 +1929,7 @@ document.addEventListener(
    TAMPILKAN DATA AWAL DARI FIREBASE
 ================================================== */
 
-loadDataFirebase();
+/* Data Admin dimuat setelah login berhasil. */
 
 /* Refresh data Admin setiap 5 detik */
 setInterval(function() {
