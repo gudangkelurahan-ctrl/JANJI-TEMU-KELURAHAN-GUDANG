@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Sistem Janji Temu - Kelurahan Gudang</title>
+
+<style>
+
+/* ==============================
+   GLOBAL
+============================== */
+
+* {
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    margin: 0;
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+button {
+    cursor: pointer;
+}
+
+
+/* ==============================
+   HALAMAN PEMOHON
+============================== */
+
+#halamanPemohon {
+    display: block;
+}
+
+.header {
+    background: linear-gradient(135deg, #087f5b, #0b7285);
+    color: white;
+    padding: 35px 20px;
+    text-align: center;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 30px;
+}
+
+.header p {
+    margin: 8px 0 0;
+}
+
+.container {
+    max-width: 750px;
+    margin: 30px auto;
+    padding: 0 15px;
+}
+
+.card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 5px 20px rgba(0,0,0,.08);
+}
+
+.card h2 {
+    text-align: center;
+    color: #087f5b;
+    margin-top: 0;
+}
+
+.info {
+    background: #e7f5ef;
+    border-left: 5px solid #087f5b;
+    padding: 15px;
+    border-radius: 7px;
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 7px;
+}
+
+.required {
+    color: red;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 15px;
+    outline: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #087f5b;
+}
+
+textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.row {
+    display: flex;
+    gap: 15px;
+}
+
+.row .form-group {
+    flex: 1;
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    background: #087f5b;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.btn-submit:hover {
+    background: #066b4d;
+}
+
+
+/* ==============================
+   HASIL BOOKING
+============================== */
+
+.hasil {
+    display: none;
+    margin-top: 25px;
+    background: #e7f5ef;
+    border: 1px solid #087f5b;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.booking {
+    text-align: center;
+    font-size: 26px;
+    font-weight: bold;
+    color: #d9480f;
+    padding: 10px;
+}
+
+
+/* ==============================
+   ADMIN
+============================== */
+
+#halamanAdmin {
+    display: none;
+}
+
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 240px;
+    background: #087f5b;
+    color: white;
+    padding: 25px 15px;
+}
+
+.sidebar h2 {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.sidebar button {
+    display: block;
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: white;
+    text-align: left;
+    padding: 13px;
+    border-radius: 7px;
+    margin-bottom: 7px;
+}
+
+.sidebar button:hover,
+.sidebar button.active {
+    background: rgba(255,255,255,.18);
+}
+
+.admin-content {
+    flex: 1;
+    padding: 30px;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.admin-header h1 {
+    margin: 0;
+}
+
+.admin-user {
+    background: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+}
+
+
+/* ==============================
+   STATISTIK
+============================== */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.stat {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0,0,0,.06);
+}
+
+.stat h3 {
+    margin: 0;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.stat p {
+    margin: 10px 0 0;
+    font-size: 30px;
+    font-weight: bold;
+    color: #087f5b;
+}
+
+
+/* ==============================
+   TABEL
+============================== */
+
+.table-card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0,0,0,.06);
+}
+
+.filter {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.filter input,
+.filter select {
+    padding: 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 13px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+}
+
+th {
+    background: #f8fafc;
+}
+
+.status {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status-menunggu {
+    background: #fff3bf;
+    color: #b7791f;
+}
+
+.status-disetujui {
+    background: #d3f9d8;
+    color: #2b8a3e;
+}
+
+.status-ditolak {
+    background: #ffe3e3;
+    color: #c92a2a;
+}
+
+.status-selesai {
+    background: #d0ebff;
+    color: #1864ab;
+}
+
+
+/* ==============================
+   BUTTON ADMIN
+============================== */
+
+.btn {
+    border: none;
+    padding: 7px 10px;
+    border-radius: 6px;
+    color: white;
+    margin: 2px;
+}
+
+.btn-detail {
+    background: #1971c2;
+}
+
+.btn-setuju {
+    background: #2b8a3e;
+}
+
+.btn-tolak {
+    background: #c92a2a;
+}
+
+.btn-selesai {
+    background: #1864ab;
+}
+
+
+/* ==============================
+   NOTIFIKASI
+============================== */
+
+.notifikasi {
+    position: fixed;
+    right: 25px;
+    bottom: 25px;
+    background: #087f5b;
+    color: white;
+    padding: 18px 22px;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,.2);
+    display: none;
+    z-index: 999;
+}
+
+
+/* ==============================
+   RESPONSIVE
+============================== */
+
+@media(max-width: 900px) {
+
+    .sidebar {
+        width: 200px;
+    }
+
+    .stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media(max-width: 650px) {
+
+    .admin-layout {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+    }
+
+    .admin-content {
+        padding: 15px;
+    }
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+
+    .row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .filter {
+        flex-direction: column;
+    }
+
+    .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
+
+</style>
+</head>
+
+
+<body>
+
+
+<!-- ==================================================
+     HALAMAN PEMOHON
+================================================== -->
+
+<div id="halamanPemohon">
+
+    <div class="header">
+
+        <h1>JANJI TEMU PELAYANAN</h1>
+
+        <p>
+            Kelurahan Gudang Kecamatan Bogor Tengah
+        </p>
+
+    </div>
+
+
+    <div class="container">
+
+        <div class="card">
+
+            <h2>Formulir Janji Temu</h2>
+
+            <div class="info">
+
+                Silakan isi data dengan lengkap.
+                Setelah formulir dikirim, data akan otomatis
+                masuk ke sistem Admin untuk diproses.
+
+            </div>
+
+
+            <form id="formJanjiTemu">
+
+
+                <div class="form-group">
+
+                    <label>
+                        Nama Pemohon
+                        <span class="required">*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        id="nama"
+                        placeholder="Masukkan nama lengkap"
+                        required>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        NIK
+                        <span class="required">*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        id="nik"
+                        maxlength="16"
+                        inputmode="numeric"
+                        placeholder="Masukkan 16 digit NIK"
+                        required>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Nomor Handphone
+                        <span class="required">*</span>
+                    </label>
+
+                    <input
+                        type="tel"
+                        id="hp"
+                        placeholder="Contoh: 081234567890"
+                        required>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Alamat
+                    </label>
+
+                    <textarea
+                        id="alamat"
+                        placeholder="Masukkan alamat lengkap">
+                    </textarea>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Jenis Layanan
+                        <span class="required">*</span>
+                    </label>
+
+                    <select id="layanan" required>
+
+                        <option value="">
+                            -- Pilih Layanan --
+                        </option>
+
+                        <option>
+                            Administrasi Kependudukan
+                        </option>
+
+                        <option>
+                            Surat Keterangan
+                        </option>
+
+                        <option>
+                            Surat Pengantar
+                        </option>
+
+                        <option>
+                            Ahli Waris
+                        </option>
+
+                        <option>
+                            Surat Keterangan Domisili
+                        </option>
+
+                        <option>
+                            Konsultasi Pelayanan
+                        </option>
+
+                        <option>
+                            Pelayanan Umum
+                        </option>
+
+                        <option>
+                            Lainnya
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="row">
+
+                    <div class="form-group">
+
+                        <label>
+                            Tanggal
+                            <span class="required">*</span>
+                        </label>
+
+                        <input
+                            type="date"
+                            id="tanggal"
+                            required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Jam
+                            <span class="required">*</span>
+                        </label>
+
+                        <select id="jam" required>
+
+                            <option value="">
+                                -- Pilih Jam --
+                            </option>
+
+                            <option>08:00</option>
+                            <option>08:30</option>
+                            <option>09:00</option>
+                            <option>09:30</option>
+                            <option>10:00</option>
+                            <option>10:30</option>
+                            <option>11:00</option>
+                            <option>11:30</option>
+                            <option>13:00</option>
+                            <option>13:30</option>
+                            <option>14:00</option>
+                            <option>14:30</option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Petugas yang Dituju
+                    </label>
+
+                    <select id="petugas">
+
+                        <option value="">
+                            -- Pilih Petugas --
+                        </option>
+
+                        <option>
+                            Lurah
+                        </option>
+
+                        <option>
+                            Sekretaris Kelurahan
+                        </option>
+
+                        <option>
+                            Petugas Pelayanan
+                        </option>
+
+                        <option>
+                            Petugas Administrasi
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Keperluan
+                        <span class="required">*</span>
+                    </label>
+
+                    <textarea
+                        id="keperluan"
+                        placeholder="Tuliskan keperluan janji temu"
+                        required>
+                    </textarea>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Upload Dokumen Pendukung
+                    </label>
+
+                    <input
+                        type="file"
+                        id="dokumen"
+                        accept=".jpg,.jpeg,.png,.pdf">
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="btn-submit">
+
+                    AJUKAN JANJI TEMU
+
+                </button>
+
+            </form>
+
+
+            <!-- HASIL -->
+            <div
+                class="hasil"
+                id="hasil">
+
+                <h3>
+                    ✓ Pengajuan Berhasil
+                </h3>
+
+                <p>
+                    Data Anda sudah masuk ke sistem Admin.
+                </p>
+
+                <p>
+                    Nomor Booking:
+                </p>
+
+                <div
+                    class="booking"
+                    id="nomorBooking">
+                </div>
+
+                <hr>
+
+                <p>
+                    Simpan nomor booking tersebut
+                    untuk melakukan pengecekan janji temu.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ==================================================
+     HALAMAN ADMIN
+================================================== -->
+
+<div id="halamanAdmin">
+
+    <div class="admin-layout">
+
+
+        <!-- SIDEBAR -->
+
+        <div class="sidebar">
+
+            <h2>
+                ADMIN
+            </h2>
+
+            <button class="active">
+                📊 Dashboard
+            </button>
+
+            <button>
+                📅 Janji Temu
+            </button>
+
+            <button>
+                👥 Data Pemohon
+            </button>
+
+            <button>
+                📋 Laporan
+            </button>
+
+            <button>
+                ⚙ Pengaturan
+            </button>
+
+            <button onclick="kembaliPemohon()">
+                ← Halaman Pemohon
+            </button>
+
+        </div>
+
+
+        <!-- CONTENT -->
+
+        <div class="admin-content">
+
+
+            <div class="admin-header">
+
+                <div>
+
+                    <h1>
+                        Dashboard Admin
+                    </h1>
+
+                    <p>
+                        Kelola data janji temu pelayanan
+                    </p>
+
+                </div>
+
+
+                <div class="admin-user">
+
+                    👤 Administrator
+
+                </div>
+
+            </div>
+
+
+            <!-- STATISTIK -->
+
+            <div class="stats">
+
+                <div class="stat">
+
+                    <h3>
+                        Total Janji Temu
+                    </h3>
+
+                    <p id="total">
+                        0
+                    </p>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <h3>
+                        Menunggu
+                    </h3>
+
+                    <p id="jumlahMenunggu">
+                        0
+                    </p>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <h3>
+                        Disetujui
+                    </h3>
+
+                    <p id="jumlahDisetujui">
+                        0
+                    </p>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <h3>
+                        Selesai
+                    </h3>
+
+                    <p id="jumlahSelesai">
+                        0
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- DATA -->
+
+            <div class="table-card">
+
+                <h2>
+                    Data Janji Temu
+                </h2>
+
+
+                <div class="filter">
+
+                    <input
+                        type="text"
+                        id="pencarian"
+                        placeholder="Cari nama / NIK / booking..."
+                        onkeyup="filterData()">
+
+
+                    <select
+                        id="filterStatus"
+                        onchange="filterData()">
+
+                        <option value="">
+                            Semua Status
+                        </option>
+
+                        <option value="Menunggu">
+                            Menunggu
+                        </option>
+
+                        <option value="Disetujui">
+                            Disetujui
+                        </option>
+
+                        <option value="Ditolak">
+                            Ditolak
+                        </option>
+
+                        <option value="Selesai">
+                            Selesai
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>No</th>
+
+                                <th>Booking</th>
+
+                                <th>Nama</th>
+
+                                <th>NIK</th>
+
+                                <th>Layanan</th>
+
+                                <th>Tanggal</th>
+
+                                <th>Jam</th>
+
+                                <th>Status</th>
+
+                                <th>Aksi</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="dataAdmin">
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- NOTIFIKASI -->
+
+<div
+    class="notifikasi"
+    id="notifikasi">
+
+    🔔 Ada pengajuan janji temu baru!
+
+</div>
+
+
+
+<script>
+
+
+/* ==================================================
+   STORAGE
+================================================== */
+
+let dataJanji =
+    JSON.parse(
+        localStorage.getItem("dataJanji")
+    ) || [];
+
+
+/* ==================================================
+   TANGGAL MINIMAL
+================================================== */
+
+const today =
+    new Date();
+
+const todayString =
+    today.getFullYear() +
+    "-" +
+    String(today.getMonth() + 1)
+        .padStart(2, "0") +
+    "-" +
+    String(today.getDate())
+        .padStart(2, "0");
+
+document.getElementById("tanggal")
+    .min = todayString;
+
+
+
+/* ==================================================
+   SUBMIT FORM PEMOHON
+================================================== */
+
+document
+.getElementById("formJanjiTemu")
+.addEventListener("submit", function(e) {
+
+    e.preventDefault();
+
+
+    const nama =
+        document.getElementById("nama").value.trim();
+
+    const nik =
+        document.getElementById("nik").value.trim();
+
+    const hp =
+        document.getElementById("hp").value.trim();
+
+    const alamat =
+        document.getElementById("alamat").value.trim();
+
+    const layanan =
+        document.getElementById("layanan").value;
+
+    const tanggal =
+        document.getElementById("tanggal").value;
+
+    const jam =
+        document.getElementById("jam").value;
+
+    const petugas =
+        document.getElementById("petugas").value;
+
+    const keperluan =
+        document.getElementById("keperluan").value.trim();
+
+
+    /* VALIDASI NIK */
+
+    if (!/^[0-9]{16}$/.test(nik)) {
+
+        alert(
+            "NIK harus terdiri dari 16 digit angka."
+        );
+
+        return;
+
+    }
+
+
+    /* NOMOR BOOKING */
+
+    const nomor =
+        Math.floor(
+            1000 +
+            Math.random() * 9000
+        );
+
+    const tanggalBooking =
+        today.getFullYear() +
+        String(today.getMonth() + 1)
+            .padStart(2,"0") +
+        String(today.getDate())
+            .padStart(2,"0");
+
+
+    const booking =
+        "JT-" +
+        tanggalBooking +
+        "-" +
+        nomor;
+
+
+    /* DATA BARU */
+
+    const dataBaru = {
+
+        id: Date.now(),
+
+        booking: booking,
+
+        nama: nama,
+
+        nik: nik,
+
+        hp: hp,
+
+        alamat: alamat,
+
+        layanan: layanan,
+
+        tanggal: tanggal,
+
+        jam: jam,
+
+        petugas: petugas,
+
+        keperluan: keperluan,
+
+        status: "Menunggu"
+
+    };
+
+
+    /* SIMPAN */
+
+    dataJanji.push(dataBaru);
+
+    localStorage.setItem(
+        "dataJanji",
+        JSON.stringify(dataJanji)
+    );
+
+
+    /* TAMPILKAN BOOKING */
+
+    document.getElementById("nomorBooking")
+        .textContent = booking;
+
+    document.getElementById("hasil")
+        .style.display = "block";
+
+
+    /* RESET */
+
+    document.getElementById("formJanjiTemu")
+        .reset();
+
+
+    document.getElementById("tanggal")
+        .min = todayString;
+
+
+    /* NOTIFIKASI */
+
+    tampilkanNotifikasi();
+
+
+    /* UPDATE ADMIN */
+
+    tampilkanAdmin();
+
+
+    window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth"
+    });
+
+});
+
+
+
+/* ==================================================
+   NOTIFIKASI
+================================================== */
+
+function tampilkanNotifikasi() {
+
+    const notif =
+        document.getElementById("notifikasi");
+
+    notif.style.display = "block";
+
+    setTimeout(function() {
+
+        notif.style.display = "none";
+
+    }, 4000);
+
+}
+
+
+
+/* ==================================================
+   TAMPILKAN ADMIN
+================================================== */
+
+function tampilkanAdmin(data = dataJanji) {
+
+    const table =
+        document.getElementById("dataAdmin");
+
+    table.innerHTML = "";
+
+
+    data.forEach(function(item, index) {
+
+        let statusClass = "";
+
+        if (item.status === "Menunggu")
+            statusClass = "status-menunggu";
+
+        if (item.status === "Disetujui")
+            statusClass = "status-disetujui";
+
+        if (item.status === "Ditolak")
+            statusClass = "status-ditolak";
+
+        if (item.status === "Selesai")
+            statusClass = "status-selesai";
+
+
+        let tombol = "";
+
+
+        if (item.status === "Menunggu") {
+
+            tombol = `
+
+                <button
+                    class="btn btn-setuju"
+                    onclick="setujui('${item.booking}')">
+
+                    Setuju
+
+                </button>
+
+                <button
+                    class="btn btn-tolak"
+                    onclick="tolak('${item.booking}')">
+
+                    Tolak
+
+                </button>
+
+            `;
+
+        }
+
+
+        if (item.status === "Disetujui") {
+
+            tombol = `
+
+                <button
+                    class="btn btn-selesai"
+                    onclick="selesai('${item.booking}')">
+
+                    Selesai
+
+                </button>
+
+            `;
+
+        }
+
+
+        const row = `
+
+            <tr>
+
+                <td>
+                    ${index + 1}
+                </td>
+
+                <td>
+                    <b>${item.booking}</b>
+                </td>
+
+                <td>
+                    ${item.nama}
+                </td>
+
+                <td>
+                    ${item.nik}
+                </td>
+
+                <td>
+                    ${item.layanan}
+                </td>
+
+                <td>
+                    ${item.tanggal}
+                </td>
+
+                <td>
+                    ${item.jam}
+                </td>
+
+                <td>
+
+                    <span
+                        class="status ${statusClass}">
+
+                        ${item.status}
+
+                    </span>
+
+                </td>
+
+                <td>
+
+                    <button
+                        class="btn btn-detail"
+                        onclick="detail('${item.booking}')">
+
+                        Detail
+
+                    </button>
+
+                    ${tombol}
+
+                </td>
+
+            </tr>
+
+        `;
+
+
+        table.innerHTML += row;
+
+    });
+
+
+    updateStatistik();
+
+}
+
+
+
+/* ==================================================
+   STATISTIK
+================================================== */
+
+function updateStatistik() {
+
+    document.getElementById("total")
+        .textContent =
+        dataJanji.length;
+
+
+    document.getElementById("jumlahMenunggu")
+        .textContent =
+        dataJanji.filter(
+            x => x.status === "Menunggu"
+        ).length;
+
+
+    document.getElementById("jumlahDisetujui")
+        .textContent =
+        dataJanji.filter(
+            x => x.status === "Disetujui"
+        ).length;
+
+
+    document.getElementById("jumlahSelesai")
+        .textContent =
+        dataJanji.filter(
+            x => x.status === "Selesai"
+        ).length;
+
+}
+
+
+
+/* ==================================================
+   SETUJUI
+================================================== */
+
+function setujui(booking) {
+
+    const item =
+        dataJanji.find(
+            x => x.booking === booking
+        );
+
+    if (!item) return;
+
+    item.status = "Disetujui";
+
+    localStorage.setItem(
+        "dataJanji",
+        JSON.stringify(dataJanji)
+    );
+
+    tampilkanAdmin();
+
+}
+
+
+
+/* ==================================================
+   TOLAK
+================================================== */
+
+function tolak(booking) {
+
+    const item =
+        dataJanji.find(
+            x => x.booking === booking
+        );
+
+    if (!item) return;
+
+    item.status = "Ditolak";
+
+    localStorage.setItem(
+        "dataJanji",
+        JSON.stringify(dataJanji)
+    );
+
+    tampilkanAdmin();
+
+}
+
+
+
+/* ==================================================
+   SELESAI
+================================================== */
+
+function selesai(booking) {
+
+    const item =
+        dataJanji.find(
+            x => x.booking === booking
+        );
+
+    if (!item) return;
+
+    item.status = "Selesai";
+
+    localStorage.setItem(
+        "dataJanji",
+        JSON.stringify(dataJanji)
+    );
+
+    tampilkanAdmin();
+
+}
+
+
+
+/* ==================================================
+   DETAIL
+================================================== */
+
+function detail(booking) {
+
+    const item =
+        dataJanji.find(
+            x => x.booking === booking
+        );
+
+    if (!item) return;
+
+
+    alert(
+
+        "DETAIL JANJI TEMU\n\n" +
+
+        "Nomor Booking : " +
+        item.booking +
+
+        "\n\nNama : " +
+        item.nama +
+
+        "\nNIK : " +
+        item.nik +
+
+        "\nNo. HP : " +
+        item.hp +
+
+        "\nAlamat : " +
+        item.alamat +
+
+        "\n\nLayanan : " +
+        item.layanan +
+
+        "\nTanggal : " +
+        item.tanggal +
+
+        "\nJam : " +
+        item.jam +
+
+        "\nPetugas : " +
+        item.petugas +
+
+        "\n\nKeperluan : " +
+        item.keperluan +
+
+        "\n\nStatus : " +
+        item.status
+
+    );
+
+}
+
+
+
+/* ==================================================
+   PENCARIAN
+================================================== */
+
+function filterData() {
+
+    const keyword =
+        document.getElementById("pencarian")
+        .value
+        .toLowerCase();
+
+    const status =
+        document.getElementById("filterStatus")
+        .value;
+
+
+    const hasil =
+        dataJanji.filter(function(item) {
+
+            const cocokKeyword =
+
+                item.nama
+                .toLowerCase()
+                .includes(keyword)
+
+                ||
+
+                item.nik
+                .includes(keyword)
+
+                ||
+
+                item.booking
+                .toLowerCase()
+                .includes(keyword);
+
+
+            const cocokStatus =
+
+                status === "" ||
+
+                item.status === status;
+
+
+            return cocokKeyword &&
+                   cocokStatus;
+
+        });
+
+
+    tampilkanAdmin(hasil);
+
+}
+
+
+
+/* ==================================================
+   BUKA ADMIN
+================================================== */
+
+function bukaAdmin() {
+
+    document.getElementById(
+        "halamanPemohon"
+    ).style.display = "none";
+
+
+    document.getElementById(
+        "halamanAdmin"
+    ).style.display = "block";
+
+
+    tampilkanAdmin();
+
+}
+
+
+
+/* ==================================================
+   KEMBALI PEMOHON
+================================================== */
+
+function kembaliPemohon() {
+
+    document.getElementById(
+        "halamanAdmin"
+    ).style.display = "none";
+
+
+    document.getElementById(
+        "halamanPemohon"
+    ).style.display = "block";
+
+}
+
+
+
+/* ==================================================
+   AKSES ADMIN
+   TEKAN CTRL + SHIFT + A
+================================================== */
+
+document.addEventListener(
+    "keydown",
+    function(e) {
+
+        if (
+            e.ctrlKey &&
+            e.shiftKey &&
+            e.key.toLowerCase() === "a"
+        ) {
+
+            bukaAdmin();
+
+        }
+
+    }
+);
+
+
+/* ==================================================
+   TAMPILKAN DATA AWAL
+================================================== */
+
+tampilkanAdmin();
+
+</script>
+
+</body>
+</html>
